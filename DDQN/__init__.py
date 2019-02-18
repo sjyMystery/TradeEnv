@@ -36,10 +36,13 @@ class DoubleDQN:
 
         self.learn_step_counter = 0
         self.memory = np.zeros((self.memory_size, n_features * 2 + 2))
-        self._build_net()
-        t_params = tf.get_collection('target_net_params')
-        e_params = tf.get_collection('eval_net_params')
-        self.replace_target_op = [tf.assign(t, e) for t, e in zip(t_params, e_params)]
+
+        with tf.device('/cpu:0'):
+
+            self._build_net()
+            t_params = tf.get_collection('target_net_params')
+            e_params = tf.get_collection('eval_net_params')
+            self.replace_target_op = [tf.assign(t, e) for t, e in zip(t_params, e_params)]
 
         if sess is None:
             self.sess = tf.Session()
