@@ -204,13 +204,13 @@ class DeepQNetwork:
             # consist of [target_net, evaluate_net]
             self._build_net()
 
-        t_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='target_net')
-        e_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='eval_net')
+            t_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='target_net')
+            e_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='eval_net')
 
-        with tf.variable_scope('hard_replacement'):
-            self.target_replace_op = [tf.assign(t, e) for t, e in zip(t_params, e_params)]
+            with tf.variable_scope('hard_replacement'):
+                self.target_replace_op = [tf.assign(t, e) for t, e in zip(t_params, e_params)]
 
-        self.sess = tf.Session()
+            self.sess = tf.Session()
 
         if output_graph:
             # $ tensorboard --logdir=logs
