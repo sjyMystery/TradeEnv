@@ -32,7 +32,7 @@ def action_convert(action_):
 MEMORY_SIZE = 1024
 
 feed = CSVFeed()
-feed.append_csv("/Users/nathaniel/PycharmProjects/fxcm-market-data-graber/data/m1/AUDCAD/2012/1.csv.gz")
+feed.append_csv("./20.csv.gz")
 env = MarketEnv(100000, feed, False)
 dqn = DoubleDQN(3, env.observe_space.shape[0], memory_size=MEMORY_SIZE, replace_target_iter=300)
 eps = 0

@@ -200,8 +200,9 @@ class DeepQNetwork:
         # initialize zero memory [s, a, r, s_]
         self.memory = np.zeros((self.memory_size, n_features * 2 + 2))
 
-        # consist of [target_net, evaluate_net]
-        self._build_net()
+        with tf.device('/cpu:0'):
+            # consist of [target_net, evaluate_net]
+            self._build_net()
 
         t_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='target_net')
         e_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='eval_net')
@@ -229,9 +230,9 @@ class DeepQNetwork:
 
         # ------------------ build evaluate_net ------------------
         with tf.variable_scope('eval_net'):
-            e1 = tf.layers.dense(self.s, 128, tf.nn.sigmoid,  name='e1')
-            e2 = tf.layers.dense(e1, 128, tf.nn.relu,  name='e2')
-            e3= tf.layers.dense(e2, 256, tf.nn.relu,  name='e3')
+            e1 = tf.layers.dense(self.s, 128, tf.nn.sigmoid, name='e1')
+            e2 = tf.layers.dense(e1, 128, tf.nn.relu, name='e2')
+            e3 = tf.layers.dense(e2, 256, tf.nn.relu, name='e3')
             self.q_eval = tf.layers.dense(e3, self.n_actions, name='q')
 
         # ------------------ build target_net ------------------
@@ -239,17 +240,17 @@ class DeepQNetwork:
             t1 = tf.layers.dense(self.s_, 128, tf.nn.sigmoid,
                                  name='t1')
             t2 = tf.layers.dense(t1, 128, tf.nn.relu,
-                                  name='t1_')
-            t3 = tf.layers.dense(t2,256,tf.nn.relu,name='t3')
+                                 name='t1_')
+            t3 = tf.layers.dense(t2, 256, tf.nn.relu, name='t3')
             self.q_next = tf.layers.dense(t3, self.n_actions,
-                                           name='t2')
+                                          name='t2')
 
         with tf.variable_scope('q_target'):
-            q_target = self.r + self.gamma * tf.reduce_max(self.q_next, axis=1, name='Qmax_s_')    # shape=(None, )
+            q_target = self.r + self.gamma * tf.reduce_max(self.q_next, axis=1, name='Qmax_s_')  # shape=(None, )
             self.q_target = tf.stop_gradient(q_target)
         with tf.variable_scope('q_eval'):
             a_indices = tf.stack([tf.range(tf.shape(self.a)[0], dtype=tf.int32), self.a], axis=1)
-            self.q_eval_wrt_a = tf.gather_nd(params=self.q_eval, indices=a_indices)    # shape=(None, )
+            self.q_eval_wrt_a = tf.gather_nd(params=self.q_eval, indices=a_indices)  # shape=(None, )
         with tf.variable_scope('loss'):
             self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, self.q_eval_wrt_a, name='TD_error'))
         with tf.variable_scope('train'):
